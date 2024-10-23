@@ -2,8 +2,8 @@
 #include <PubSubClient.h>
 
 // WiFi credentials
-const char* ssid = "TF4-2.4G";  // Your WiFi network name (SSID)
-const char* password = "kokomlelepoi";  // Your WiFi password
+const char* ssid = "YOUR_WIFI";  // Your WiFi network name (SSID)
+const char* password = "YOUR_WIFI_PASSWORD";  // Your WiFi password
 
 // MQTT Broker settings
 const char* mqtt_server = "broker.emqx.io";  // MQTT broker address
