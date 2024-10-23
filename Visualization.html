@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Data Visualization</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #status {
+            color: green;
+            margin-bottom: 20px;
+        }
+        #chartContainer {
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>MQTT Data Visualization</h1>
+<div id="status">Connecting to MQTT broker...</div>
+
+<!-- Chart Container -->
+<div id="chartContainer">
+    <canvas id="sensorChart"></canvas>
+</div>
+
+<script>
+    // Connect to the MQTT broker
+    const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt'); // Replace with your broker URL
+
+    // Initialize chart data arrays
+    const labels = [];
+    const dataPoints = [];
+
+    // Create the chart
+    const ctx = document.getElementById('sensorChart').getContext('2d');
+    const sensorChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'MQ7 Sensor Readings',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                data: dataPoints,
+                fill: true,
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'linear',
+                    position: 'bottom'
+                },
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    client.on('connect', () => {
+        document.getElementById('status').innerText = 'Connected to MQTT broker';
+        // Subscribe to a topic
+        client.subscribe('sensor/mq7', (err) => {
+            if (!err) {
+                console.log('Subscribed to topic: sensor/mq7');
+            } else {
+                console.error('Subscription error:', err);
+            }
+        });
+    });
+
+    client.on('message', (topic, message) => {
+        // Display the received message
+        const msg = parseFloat(message.toString());
+        if (!isNaN(msg)) {
+            // Update chart data
+            const timestamp = labels.length + 1; // Simple counter for x-axis
+            labels.push(timestamp);
+            dataPoints.push(msg);
+
+            // Update chart
+            sensorChart.update();
+        }
+    });
+
+    client.on('error', (error) => {
+        console.error('MQTT Error:', error);
+    });
+</script>
+
+</body>
+</html>
